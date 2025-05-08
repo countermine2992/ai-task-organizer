@@ -1,0 +1,9 @@
+{
+  "name": "taskbuddy",
+  "version": "1.0.0",
+  "description": "AI-powered task manager with offline NLP",
+  "main": "app.js",
+  "dependencies": {
+    "@xenova/transformers": "^2.15.0"
+  }
+} 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskBuddy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.15.0"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TaskBuddy</h1>
+            <p class="subtitle">Your AI-powered task manager</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <input type="text" id="taskInput" placeholder="Add a task (e.g., 'Buy milk tomorrow at 3 PM')" />
+                <button id="addTask">Add Task</button>
+            </div>
+
+            <div class="tasks-section">
+                <div class="tasks-header">
+                    <h2>Your Tasks</h2>
+                    <button id="suggestGroups">Suggest Groups</button>
+                </div>
+                <div id="taskList"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="loadingSpinner" class="spinner-container">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Load Supabase first -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Verify Supabase is loaded
+        if (typeof window.supabase === 'undefined') {
+            console.error('Supabase failed to load. Please check your internet connection.');
+            alert('Failed to load Supabase. Please refresh the page.');
+        }
+    </script>
+
+    <!-- Then load our configuration and app -->
+    <script src="config.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html> 

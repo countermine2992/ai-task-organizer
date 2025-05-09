@@ -3,50 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskBuddy</title>
+    <title>AI Task Organizer</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.15.0"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>TaskBuddy</h1>
-            <p class="subtitle">Your AI-powered task manager</p>
-        </header>
+        <h1>AI Task Organizer</h1>
+        
+        <div class="task-input-container">
+            <input type="text" id="taskInput" placeholder="Enter a task (e.g., 'Urgent meeting with team tomorrow at 2pm')">
+            <button id="addTaskBtn">Add Task</button>
+        </div>
 
-        <main>
-            <div class="input-section">
-                <input type="text" id="taskInput" placeholder="Add a task (e.g., 'Buy milk tomorrow at 3 PM')" />
-                <button id="addTask">Add Task</button>
+        <div class="suggestions-container">
+            <button id="suggestGroupsBtn" class="suggest-btn">
+                <span class="ai-icon">🤖</span>
+                Get AI Suggestions
+            </button>
+            <div id="aiSuggestions" class="ai-suggestions">
+                <h3>AI Suggestions</h3>
+                <div id="suggestionsList"></div>
             </div>
+        </div>
 
-            <div class="tasks-section">
-                <div class="tasks-header">
-                    <h2>Your Tasks</h2>
-                    <button id="suggestGroups">Suggest Groups</button>
-                </div>
-                <div id="taskList"></div>
-            </div>
-        </main>
+        <div class="task-groups" id="taskGroups">
+            <!-- Task groups will be dynamically inserted here -->
+        </div>
+
+        <div id="taskList" class="task-list">
+            <!-- Tasks will be dynamically inserted here -->
+        </div>
     </div>
 
-    <div id="loadingSpinner" class="spinner-container">
-        <div class="spinner"></div>
-    </div>
+    <div id="loadingSpinner" class="spinner"></div>
 
-    <!-- Load Supabase first -->
+    <!-- Load Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Verify Supabase is loaded
-        if (typeof window.supabase === 'undefined') {
-            console.error('Supabase failed to load. Please check your internet connection.');
-            alert('Failed to load Supabase. Please refresh the page.');
-        }
-    </script>
-
-    <!-- Then load our configuration and app -->
+    
+    <!-- Load our scripts -->
     <script src="config.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="taskParser.js"></script>
+    <script src="ai-insights.js"></script>
+    <script src="task-ai.js"></script>
+    <script src="app.js"></script>
 </body>
 </html> 

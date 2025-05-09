@@ -1,9 +1,24 @@
 {
   "name": "taskbuddy",
   "version": "1.0.0",
-  "description": "AI-powered task manager with offline NLP",
+  "description": "AI-powered task management application",
   "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
   "dependencies": {
-    "@xenova/transformers": "^2.15.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@jest/globals": "^29.7.0",
+    "babel-jest": "^29.7.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   }
 } 

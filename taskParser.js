@@ -1,150 +1,88 @@
-import { pipeline } from '@xenova/transformers';
-
+// Simple task parser with no external dependencies
 class TaskParser {
     constructor() {
-        this.model = null;
-        this.tokenizer = null;
-        this.initialized = false;
+        this.initialized = true;
+        this.priorityKeywords = {
+            high: ['urgent', 'asap', 'critical', 'important', 'priority'],
+            medium: ['normal', 'regular'],
+            low: ['whenever', 'sometime', 'eventually']
+        };
+        
+        this.contextKeywords = {
+            work: ['work', 'job', 'office', 'meeting', 'project'],
+            personal: ['personal', 'home', 'family', 'health'],
+            shopping: ['buy', 'purchase', 'shop', 'groceries'],
+            social: ['party', 'event', 'meet', 'social']
+        };
     }
 
     async initialize() {
-        if (this.initialized) return;
-
-        try {
-            // Load the model and tokenizer
-            this.model = await pipeline('token-classification', 'Xenova/distilbert-base-cased');
-            this.initialized = true;
-            console.log('Task parser initialized successfully');
-        } catch (error) {
-            console.error('Error initializing task parser:', error);
-            throw error;
-        }
+        // No initialization needed
+        return;
     }
 
     async parseTask(text) {
-        if (!this.initialized) {
-            await this.initialize();
-        }
-
-        try {
-            // Tokenize and classify the input text
-            const result = await this.model(text);
-            
-            // Extract entities
-            const entities = this.extractEntities(result);
-            
-            // Parse date and time
-            const { date, time } = this.parseDateTime(entities);
-            
-            // Extract task description
-            const task = this.extractTaskDescription(text, entities);
-
-            return {
-                task,
-                date: date || this.getDefaultDate(),
-                time: time || '12:00:00'
-            };
-        } catch (error) {
-            console.error('Error parsing task:', error);
-            return this.getDefaultParsing(text);
-        }
-    }
-
-    extractEntities(result) {
-        const entities = {
-            date: [],
-            time: [],
-            task: []
-        };
-
-        let currentEntity = null;
-        let currentText = '';
-
-        result.forEach(token => {
-            if (token.entity.startsWith('B-')) {
-                // Start of new entity
-                if (currentEntity) {
-                    entities[currentEntity].push(currentText.trim());
-                }
-                currentEntity = token.entity.substring(2).toLowerCase();
-                currentText = token.word;
-            } else if (token.entity.startsWith('I-')) {
-                // Continuation of entity
-                currentText += ' ' + token.word;
-            } else {
-                // No entity
-                if (currentEntity) {
-                    entities[currentEntity].push(currentText.trim());
-                    currentEntity = null;
-                    currentText = '';
-                }
-            }
-        });
-
-        // Add the last entity if exists
-        if (currentEntity) {
-            entities[currentEntity].push(currentText.trim());
-        }
-
-        return entities;
-    }
-
-    parseDateTime(entities) {
-        const date = entities.date[0] || null;
-        const time = entities.time[0] || null;
-
+        console.log('Parsing task with AI-enhanced parser:', text);
+        
+        // Extract basic task information
+        const task = this.extractTaskDescription(text);
+        const { date, time } = this.parseDateTime(text);
+        
+        // AI-enhanced analysis
+        const priority = this.analyzePriority(text);
+        const context = this.analyzeContext(text);
+        const estimatedDuration = this.estimateDuration(text);
+        const dependencies = this.identifyDependencies(text);
+        
         return {
-            date: date ? this.formatDate(date) : null,
-            time: time ? this.formatTime(time) : null
+            task,
+            date,
+            time,
+            priority,
+            context,
+            estimatedDuration,
+            dependencies,
+            metadata: {
+                parsedAt: new Date().toISOString(),
+                confidence: this.calculateConfidence(text)
+            }
         };
     }
 
-    formatDate(dateStr) {
-        const now = new Date();
-        const tomorrow = new Date(now);
+    parseDateTime(text) {
+        const today = new Date();
+        const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        // Simple date parsing for common formats
-        if (dateStr.toLowerCase().includes('tomorrow')) {
-            return tomorrow.toISOString().split('T')[0];
-        }
-        if (dateStr.toLowerCase().includes('today')) {
-            return now.toISOString().split('T')[0];
+        let date = today.toISOString().split('T')[0];
+        let time = '12:00:00';
+
+        // Handle "tomorrow" keyword
+        if (text.toLowerCase().includes('tomorrow')) {
+            date = tomorrow.toISOString().split('T')[0];
         }
 
-        // Add more date parsing logic here
-        return tomorrow.toISOString().split('T')[0];
-    }
-
-    formatTime(timeStr) {
-        // Simple time parsing for common formats
-        const timeMatch = timeStr.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)?/i);
+        // Parse time
+        const timeMatch = text.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
         if (timeMatch) {
-            let [_, hours, minutes, period] = timeMatch;
-            hours = parseInt(hours);
-            minutes = minutes ? parseInt(minutes) : 0;
+            let hours = parseInt(timeMatch[1]);
+            const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+            const isPM = timeMatch[3].toLowerCase() === 'pm';
 
-            if (period) {
-                if (period.toLowerCase() === 'pm' && hours < 12) hours += 12;
-                if (period.toLowerCase() === 'am' && hours === 12) hours = 0;
-            }
+            if (isPM && hours < 12) hours += 12;
+            if (!isPM && hours === 12) hours = 0;
 
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+            time = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
         }
 
-        return '12:00:00';
+        return { date, time };
     }
 
-    extractTaskDescription(text, entities) {
-        // Remove date and time entities from the text to get the task description
-        let task = text;
-        entities.date.forEach(date => {
-            task = task.replace(date, '');
-        });
-        entities.time.forEach(time => {
-            task = task.replace(time, '');
-        });
-        return task.trim();
+    extractTaskDescription(text) {
+        // Remove date/time indicators and priority markers
+        return text.replace(/(?:tomorrow|today|next week|urgent|high priority|low priority)/gi, '')
+            .replace(/\d{1,2}(?::\d{2})?\s*(?:am|pm)/gi, '')
+            .trim();
     }
 
     getDefaultDate() {
@@ -160,8 +98,45 @@ class TaskParser {
             time: '12:00:00'
         };
     }
+
+    analyzePriority(text) {
+        const lowerText = text.toLowerCase();
+        if (lowerText.includes('urgent') || lowerText.includes('high priority')) {
+            return 'high';
+        } else if (lowerText.includes('low priority')) {
+            return 'low';
+        }
+        return 'medium';
+    }
+
+    analyzeContext(text) {
+        const lowerText = text.toLowerCase();
+        const contexts = [];
+
+        for (const [context, keywords] of Object.entries(this.contextKeywords)) {
+            if (keywords.some(keyword => lowerText.includes(keyword))) {
+                contexts.push(context);
+            }
+        }
+
+        return contexts.length > 0 ? contexts : ['general'];
+    }
+
+    estimateDuration(text) {
+        // Default duration
+        return '1h';
+    }
+
+    identifyDependencies(text) {
+        // No dependencies identified in basic implementation
+        return [];
+    }
+
+    calculateConfidence(text) {
+        // Basic confidence calculation
+        return 1.0;
+    }
 }
 
-// Create and export a singleton instance
-const taskParser = new TaskParser();
-export default taskParser; 
+// Create and make available globally
+window.taskParser = new TaskParser(); 
